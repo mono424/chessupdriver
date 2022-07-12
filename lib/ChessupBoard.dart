@@ -97,9 +97,14 @@ class ChessupBoard {
   }
 
   Future<BoardPositionMessage> requestBoardPosition({Duration timeout = const Duration(seconds: 3)}) async {
-    Future<BoardPositionMessage> ackFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
+    Future<ChessupMessageIn> ackFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
     await _send(RequestBoardPositionMessage().toBytes());
-    return ackFuture;
+
+    ChessupMessageIn message = await ackFuture;
+    if (message is BoardPositionMessage) {
+      return message;
+    }
+    return null;
   }
 
   Future<void> waitForPiecesInStartPosition({Duration timeout}) async {
@@ -124,8 +129,8 @@ class ChessupBoard {
     await _send(WinOnTimeMessage(winner).toBytes());
   }
 
-  Future<void> _send(Uint8List message) async {
-    await _client.send(message);
+  Future<void> _send(List<int> message) async {
+    await _client.send(Uint8List.fromList(message));
   }
 
   bool equals(List<int> a, List<int> b) {

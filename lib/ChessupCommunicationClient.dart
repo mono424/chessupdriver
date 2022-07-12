@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 
 class ChessupCommunicationClient {
-  final bool waitForAck;
-  final Duration ackTimeout;
   final Future<void> Function(Uint8List) send;
   final StreamController<Uint8List> _inputStreamController = StreamController<Uint8List>();
   final StreamController<Uint8List> _ackStreamController = StreamController<Uint8List>();
@@ -20,7 +18,7 @@ class ChessupCommunicationClient {
     return _ackStream;
   }
 
-  ChessupCommunicationClient(this.send, { this.waitForAck = false, this.ackTimeout = const Duration(seconds: 1) });
+  ChessupCommunicationClient(this.send);
 
   handleReceive(Uint8List message) {
     _inputStreamController.add(message);

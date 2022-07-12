@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:chessupdriver/chessupBoard.dart';
-import 'package:chessupdriver/chessupCommunicationClient.dart';
-import 'package:chessupdriver/chessupCommunicationType.dart';
-import 'package:chessupdriver/chessupProtocol.dart';
-import 'package:chessupdriver/LEDPattern.dart';
+import 'package:chess/chess.dart' as chess;
+import 'package:chessupdriver/ChessupBoard.dart';
+import 'package:chessupdriver/ChessupCommunicationClient.dart';
+import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
+import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
 import 'package:example/ble_scanner.dart';
 import 'package:example/device_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -59,18 +61,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
   final flutterReactiveBle = FlutterReactiveBle();
 
-  final bleReadCharacteristicA = Uuid.parse("1B7E8262-2877-41C3-B46E-CF057C562023");
-  final bleReadCharacteristicB = Uuid.parse("1B7E8273-2877-41C3-B46E-CF057C562023");
-  final bleWriteCharacteristic = Uuid.parse("1B7E8272-2877-41C3-B46E-CF057C562023");
+  final bleServiceId = Uuid.parse("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
+  final bleReadCharacteristic = Uuid.parse("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
+  final bleWriteCharacteristic = Uuid.parse("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
 
-  chessupBoard connectedBoard;
+  ChessupBoard connectedBoard;
   StreamSubscription<ConnectionStateUpdate> boardBtStream;
-  StreamSubscription<List<int>> boardBtInputStreamA;
-  StreamSubscription<List<int>> boardBtInputStreamB;
+  StreamSubscription<List<int>> boardBtInputStream;
+
+  StreamController<Map<String, String>> boardStateStreamController = StreamController<Map<String, String>>();
   bool loading = false;
-  bool ackEnabled = true;
 
   void connectBle() async {
     await Permission.bluetoothScan.request();
@@ -91,22 +95,13 @@ class _MyHomePageState extends State<MyHomePage> {
         await flutterReactiveBle.requestMtu(deviceId: deviceId, mtu: 247); // Important: Increase MTU
 
         QualifiedCharacteristic readA;
-        QualifiedCharacteristic readB;
         QualifiedCharacteristic write;
         for (var service in services) {
           for (var characteristicId in service.characteristicIds) {
-            if (characteristicId == bleReadCharacteristicA) {
+            if (characteristicId == bleReadCharacteristic) {
               readA = QualifiedCharacteristic(
                 serviceId: service.serviceId,
-                characteristicId: bleReadCharacteristicA,
-                deviceId: e.deviceId
-              );
-            }
-
-            if (characteristicId == bleReadCharacteristicB) {
-              readB = QualifiedCharacteristic(
-                serviceId: service.serviceId,
-                characteristicId: bleReadCharacteristicB,
+                characteristicId: bleReadCharacteristic,
                 deviceId: e.deviceId
               );
             }
@@ -121,27 +116,22 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
 
-        chessupCommunicationClient chessupCommunichessupCommunicationClient = chessupCommunicationClient(
-          chessupCommunicationType.bluetooth,
-          (v) => flutterReactiveBle.writeCharacteristicWithResponse(write, value: v),
-          waitForAck: ackEnabled
+        ChessupCommunicationClient chessupCommunichessupCommunicationClient = ChessupCommunicationClient(
+          (v) => flutterReactiveBle.writeCharacteristicWithResponse(write, value: v)
         );
-        boardBtInputStreamA = flutterReactiveBle
+        boardBtInputStream = flutterReactiveBle
             .subscribeToCharacteristic(readA)
             .listen((list) {
               chessupCommunichessupCommunicationClient.handleReceive(Uint8List.fromList(list));
             });
-        boardBtInputStreamB = flutterReactiveBle
-            .subscribeToCharacteristic(readB)
-            .listen((list) {
-              chessupCommunichessupCommunicationClient.handleAckReceive(Uint8List.fromList(list));
-            });
           
-
         // connect to board and initialize
-        chessupBoard nBoard = new chessupBoard();
+        ChessupBoard nBoard = ChessupBoard();
         await nBoard.init(chessupCommunichessupCommunicationClient);
         print("chessupBoard connected");
+
+        // listen to events
+        nBoard.getInputStream().listen(newBoardEvent);
 
         // set connected board
         setState(() {
@@ -152,35 +142,65 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  chess.Chess chessInstance = chess.Chess();
   Map<String, String> lastData;
 
-  LEDPattern ledpattern = LEDPattern();
+  void newBoardEvent(ChessupMessageIn message) {
+    if (message is BoardPositionMessage) {
+      resetChess(message.board);
+    }
+    if (message is MoveFromBoardMessage) {
+      chessInstance.move({ "from": message.from, "to": message.to });
+    }
 
-  void toggleLed(String square) {
-    ledpattern.setSquare(square, !ledpattern.getSquare(square));
-    connectedBoard.setLEDs(ledpattern);
-    setState(() {});
+    lastData = getChessBoard();
+    boardStateStreamController.add(lastData);
+  }
+
+  void resetChess(Map<String, String> board) {
+    chessInstance = chess.Chess.fromFEN("");
+    for (String square in board.keys) {
+      String piece = board[square];
+      if (piece != null) {
+        chessInstance.put(chess.Piece(
+          chess.Chess.PIECE_TYPES[piece.toLowerCase()],
+          piece.toLowerCase() != piece ? chess.Color.WHITE : chess.Color.BLACK
+        ), square);
+      }
+    }
+  }
+
+  Map<String, String> getChessBoard() {
+    Map<String, String> res = {};
+    for (var file in FILES) {
+      for (int i = 1; i <= 8; i++) {
+        String square = file + i.toString();
+        chess.Piece piece = chessInstance.get(square);
+        res[square] = piece == null ? null : (piece.color == chess.Color.WHITE ? piece.type.toUpperCase() : piece.type.toLowerCase());
+      }
+    }
+    return res;
+  }
+
+  void randomMove() {
+    List<chess.Move> moves = chessInstance.generate_moves();
+    chess.Move randomMove = moves[Random().nextInt(moves.length)];
+    chessInstance.move(randomMove);
+    connectedBoard.sendMoveToBoard(randomMove.fromAlgebraic, randomMove.toAlgebraic);
+  }
+
+  void requestBoard() {
+    connectedBoard.requestBoardPosition();
   }
 
   void disconnectBle() {
-    boardBtInputStreamA.cancel();
-    boardBtInputStreamB.cancel();
+    boardBtInputStream.cancel();
     boardBtStream.cancel();
     setState(() {
-      boardBtInputStreamA = null;
-      boardBtInputStreamB = null;
+      boardBtInputStream = null;
       boardBtStream = null;
       connectedBoard = null;
     });
-  }
-
-  void testLeds() async {
-    LEDPattern pattern;
-    for (var square in chessupProtocol.squares) {
-      pattern = LEDPattern();
-      pattern.setSquare(square, true);
-      await connectedBoard.setLEDs(pattern);
-    }
   }
 
   @override
@@ -194,24 +214,20 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Checkbox(value: ackEnabled, onChanged: connectedBoard == null ? (state) => setState(() => (ackEnabled = state)) : null),
-              SizedBox(width: 4),
-              Text("Enable Acks"),
-            ],
-          ),
           Center(child: TextButton(
             child: Text(connectedBoard == null ? "Try to connect to board (BLE)" : (boardBtStream != null ? "Disconnect" : "")),
             onPressed: !loading && connectedBoard == null ? connectBle : (boardBtStream != null && !loading ? disconnectBle : null),
           )),
           Center(child: TextButton(
-            child: Text("Test LEDS"),
-            onPressed: !loading && connectedBoard != null ? testLeds : null),
+            child: Text("Send Random Move"),
+            onPressed: !loading && connectedBoard != null ? randomMove : null),
+          ),
+          Center(child: TextButton(
+            child: Text("Request Board"),
+            onPressed: !loading && connectedBoard != null ? requestBoard : null),
           ),
           Center( child: StreamBuilder(
-            stream: connectedBoard?.getBoardUpdateStream(),
+            stream: boardStateStreamController.stream,
             builder: (context, AsyncSnapshot<Map<String, String>> snapshot) {
               if (!snapshot.hasData && lastData == null) return Text("- no data -");
 
@@ -224,33 +240,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 for (var j = 0; j < 8; j++) {
                     MapEntry<String, String> entry = fieldUpdate.entries.toList()[i * 8 + j];
                     cells.add(
-                      TextButton(
-                        onPressed: () => toggleLed(entry.key),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size(width / 8 - 4, width / 8 - 4),
-                          alignment: Alignment.centerLeft
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.only(bottom: 2),
-                          width: width / 8 - 4,
-                          height: width / 8 - 4,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              color: ledpattern.getSquare(entry.key) ? Colors.blueAccent : Colors.black54,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(entry.key, style: TextStyle(color: Colors.white)),
-                                Text(entry.value ?? ".", style: TextStyle(color: Colors.white, fontSize: 8)),
-                              ],
-                            )
+                      Container(
+                        padding: EdgeInsets.only(bottom: 2),
+                        width: width / 8 - 4,
+                        height: width / 8 - 4,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: Colors.black54,
                           ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(entry.key, style: TextStyle(color: Colors.white)),
+                              Text(entry.value ?? ".", style: TextStyle(color: Colors.white, fontSize: 8)),
+                            ],
+                          )
                         ),
                       )
-                    );
+                  );
                 }
                 rows.add(Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
