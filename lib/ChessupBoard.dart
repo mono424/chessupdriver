@@ -4,44 +4,40 @@ import 'dart:typed_data';
 import 'package:chessupdriver/ChessupCommunicationClient.dart';
 import 'package:chessupdriver/ChessupMessage.dart';
 import 'package:chessupdriver/ChessupMessageException.dart';
-import 'package:chessupdriver/ChessupProtocol.dart';
+import 'package:chessupdriver/messages/in/BoardMoveAckMessage.dart';
+import 'package:chessupdriver/messages/in/BoardPawnPromotionAckMessage.dart';
+import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
+import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
+import 'package:chessupdriver/messages/in/BoardPawnPromotionMessage.dart';
+import 'package:chessupdriver/messages/out/LoadFenMessage.dart';
+import 'package:chessupdriver/messages/out/MoveAckMessage.dart';
+import 'package:chessupdriver/messages/out/MoveToBoardMessage.dart';
+import 'package:chessupdriver/messages/out/PawnPromotionAckMessage.dart';
+import 'package:chessupdriver/messages/out/PawnPromotionMessage.dart';
+import 'package:chessupdriver/messages/out/RequestBoardPositionMessage.dart';
+import 'package:chessupdriver/messages/out/ResetGameMessage.dart';
+import 'package:chessupdriver/messages/out/SetBlackSettings.dart';
+import 'package:chessupdriver/messages/out/WinOnTimeMessage.dart';
+import 'package:chessupdriver/models/PlayerSettings.dart';
+import 'package:chessupdriver/models/WinnerColor.dart';
 import 'package:synchronized/synchronized.dart';
 
-class chessupBoard {
+class ChessupBoard {
   
   ChessupCommunicationClient _client;
   StreamController _inputStreamController;
-  StreamController _boardUpdateStreamController;
   Stream<ChessupMessageIn> _inputStream;
-  Stream<Map<String, String>> _boardUpdateStream;
   List<int> _buffer;
 
-  Map<String, String> _currBoard = Map.fromEntries(ChessupProtocol.squares.map((e) => MapEntry(e, ChessupProtocol.pieces[0])));
-
-  Map<String, String> get currBoard {
-    return _currBoard;
-  }
-
-  chessupBoard();
+  ChessupBoard();
 
   Future<void> init(ChessupCommunicationClient client) async {
     _client = client;
     _client.receiveStream.listen(_handleInputStream);
     _inputStreamController = StreamController<ChessupMessageIn>();
-    _boardUpdateStreamController = StreamController<Map<String, String>>();
     _inputStream = _inputStreamController.stream.asBroadcastStream();
-    _boardUpdateStream = _boardUpdateStreamController.stream.asBroadcastStream();
 
-    getInputStream().map(_createBoardMap).listen(_newBoardState);
-
-    Future<void> ack = getAckFuture();
-    _send(Uint8List.fromList([0x21, 0x01, 0x00]));
-    await ack;
-  }
-
-  void _newBoardState(Map<String, String> state) {
-    _currBoard = state;
-    _boardUpdateStreamController.add(_currBoard);
+    getInputStream().listen(_sendAck);
   }
 
   var lock = new Lock();
@@ -71,28 +67,65 @@ class chessupBoard {
     });
   }
 
+  void _sendAck(ChessupMessageIn message) {
+    if (ChessupMessageIn is MoveFromBoardMessage) {
+      _send(MoveAckMessage().toBytes());
+    }
+    if (ChessupMessageIn is BoardPawnPromotionMessage) {
+      _send(PawnPromotionAckMessage().toBytes());
+    }
+  }
+
   Stream<ChessupMessageIn> getInputStream() {
     return _inputStream;
   }
 
-  Stream<Map<String, String>> getBoardUpdateStream() {
-    return _boardUpdateStream;
+  Future<void> loadFenString(String fen) {
+    return _send(LoadFenMessage(fen).toBytes());
   }
 
-  Map<String, String> _createBoardMap(ChessupMessageIn message) {
-    Map<String, String> map = {};
-    for (var i = 0; i < message.pieces.length; i++) {
-      map[ChessupProtocol.squares[i]] = ChessupProtocol.pieces[message.pieces[i]];
-    }
-    return map;
+  Future<void> sendMoveToBoard(String from, String to, {bool waitForAck = false, Duration timeout = const Duration(seconds: 3)}) async {
+    Future<ChessupMessageIn> ackFuture = waitForAck ? _inputStream.firstWhere((e) => e is BoardMoveAckMessage).timeout(timeout) : Future.value(null);
+    await _send(MoveToBoardMessage(from, to).toBytes());
+    await ackFuture;
+  }
+
+  Future<void> sendPawnPromotion(String piece, {Duration timeout = const Duration(seconds: 3)}) async {
+    Future<BoardPawnPromotionAckMessage> ackFuture = _inputStream.firstWhere((e) => e is BoardPawnPromotionAckMessage).timeout(timeout);
+    await _send(PawnPromotionMessage(piece).toBytes());
+    await ackFuture;
+  }
+
+  Future<BoardPositionMessage> requestBoardPosition({Duration timeout = const Duration(seconds: 3)}) async {
+    Future<BoardPositionMessage> ackFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
+    await _send(RequestBoardPositionMessage().toBytes());
+    return ackFuture;
+  }
+
+  Future<void> waitForPiecesInStartPosition({Duration timeout}) async {
+    Future<BoardPositionMessage> resFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage);
+    await _send(RequestBoardPositionMessage().toBytes());
+    return timeout == null ? resFuture : resFuture.timeout(timeout);
+  }
+
+  Future<void> resetGame() async {
+    await _send(ResetGameMessage().toBytes());
+  }
+
+  Future<void> setBlackSettings(PlayerSettings settings) async {
+    await _send(SetBlackSettings(settings).toBytes());
+  }
+
+  Future<void> setWhiteSettings(PlayerSettings settings) async {
+    await _send(SetBlackSettings(settings).toBytes());
+  }
+
+  Future<void> winOnTime(WinnerColor winner) async {
+    await _send(WinOnTimeMessage(winner).toBytes());
   }
 
   Future<void> _send(Uint8List message) async {
     await _client.send(message);
-  }
-
-  Future<void> getAckFuture() {
-    return _client.waitForAck ? _client.ackStream.firstWhere((e) => equals(e.toList(), [0x23, 0x01, 0x00])).timeout(_client.ackTimeout) : Future.value();
   }
 
   bool equals(List<int> a, List<int> b) {

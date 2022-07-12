@@ -1,9 +1,9 @@
 import 'package:chessupdriver/ChessupMessage.dart';
 
-class PromotionAckMessage extends ChessupMessageOut {
-  static const headerPrefix = [0x23];
+class ResetGameMessage extends ChessupMessageOut {
+  static const headerPrefix = [0x64];
 
-  PromotionAckMessage();
+  ResetGameMessage();
   
   @override
   List<int> toBytes() {
