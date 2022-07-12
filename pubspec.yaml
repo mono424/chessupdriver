@@ -1,0 +1,11 @@
+name: chessupdriver
+description: A Chessup-Chessboard Driver written in pure Dart
+version: 0.0.1
+repository: https://github.com/mono424/chessupdriver
+homepage: https://khad.im
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  synchronized: ^3.0.0+2
