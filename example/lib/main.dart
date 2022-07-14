@@ -238,7 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
               for (var i = 0; i < 8; i++) {
                 List<Widget> cells = [];
                 for (var j = 0; j < 8; j++) {
-                    MapEntry<String, String> entry = fieldUpdate.entries.toList()[i * 8 + j];
+                    MapEntry<String, String> entry = fieldUpdate.entries.toList()[63 - (i + 8 * j)];
                     cells.add(
                       Container(
                         padding: EdgeInsets.only(bottom: 2),
