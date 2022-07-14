@@ -21,7 +21,7 @@ class BoardPositionMessage extends ChessupMessageIn {
 
     board = {};
     for (var i = 1; i < 65; i++) {
-      board[ChessupProtocol.squares[i]] = ChessupProtocol.pieces[message[i]];
+      board[ChessupProtocol.squares[i - 1]] = ChessupProtocol.pieces[message[i]];
     }
     turn = PlayerColor.values[message[65]];
     castelingOptions = CastelingOptions(message[66] == 1, message[67] == 1, message[68] == 1, message[69] == 1);
