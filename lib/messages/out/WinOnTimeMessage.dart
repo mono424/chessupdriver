@@ -1,10 +1,10 @@
 import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/models/WinnerColor.dart';
+import 'package:chessupdriver/models/PlayerColor.dart';
 
 class WinOnTimeMessage extends ChessupMessageOut {
   static const headerPrefix = [0xB6];
 
-  final WinnerColor winner;
+  final PlayerColor winner;
 
   WinOnTimeMessage(this.winner);
   

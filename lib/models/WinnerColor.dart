@@ -1,3 +1,0 @@
-enum WinnerColor {
-  white, black
-}

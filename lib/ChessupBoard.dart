@@ -18,8 +18,8 @@ import 'package:chessupdriver/messages/out/RequestBoardPositionMessage.dart';
 import 'package:chessupdriver/messages/out/ResetGameMessage.dart';
 import 'package:chessupdriver/messages/out/SetBlackSettings.dart';
 import 'package:chessupdriver/messages/out/WinOnTimeMessage.dart';
+import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:chessupdriver/models/PlayerSettings.dart';
-import 'package:chessupdriver/models/WinnerColor.dart';
 import 'package:synchronized/synchronized.dart';
 
 class ChessupBoard {
@@ -43,6 +43,7 @@ class ChessupBoard {
   var lock = new Lock();
   void _handleInputStream(Uint8List rawChunk) async {
     await lock.synchronized(() async {
+      print(rawChunk);
       List<int> chunk = rawChunk.toList();
 
       if (_buffer == null)
@@ -61,6 +62,7 @@ class ChessupBoard {
         } on ChessupMessageTooShortException catch (_) {
           break;
         } catch (err) {
+          _buffer = [];
           _inputStreamController.addError(err);
         }
       }
@@ -125,7 +127,7 @@ class ChessupBoard {
     await _send(SetBlackSettings(settings).toBytes());
   }
 
-  Future<void> winOnTime(WinnerColor winner) async {
+  Future<void> winOnTime(PlayerColor winner) async {
     await _send(WinOnTimeMessage(winner).toBytes());
   }
 
