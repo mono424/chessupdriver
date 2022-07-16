@@ -8,6 +8,7 @@ import 'package:chessupdriver/ChessupCommunicationClient.dart';
 import 'package:chessupdriver/ChessupMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
+import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:example/ble_scanner.dart';
 import 'package:example/device_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -143,18 +144,20 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   chess.Chess chessInstance = chess.Chess();
-  Map<String, String> lastData;
+  Map<String, String> lastChessboard;
+  BoardPositionMessage lastPosition;
 
   void newBoardEvent(ChessupMessageIn message) {
     if (message is BoardPositionMessage) {
       resetChess(message.board);
+      lastPosition = message;
     }
     if (message is MoveFromBoardMessage) {
       chessInstance.move({ "from": message.from, "to": message.to });
     }
 
-    lastData = getChessBoard();
-    boardStateStreamController.add(lastData);
+    lastChessboard = getChessBoard();
+    boardStateStreamController.add(lastChessboard);
   }
 
   void resetChess(Map<String, String> board) {
@@ -229,16 +232,34 @@ class _MyHomePageState extends State<MyHomePage> {
           Center( child: StreamBuilder(
             stream: boardStateStreamController.stream,
             builder: (context, AsyncSnapshot<Map<String, String>> snapshot) {
-              if (!snapshot.hasData && lastData == null) return Text("- no data -");
+              if (!snapshot.hasData) return Text("- no data -");
 
-              Map<String, String> fieldUpdate = snapshot.data ?? lastData;
-              lastData = fieldUpdate;
-              List<Widget> rows = [];
+              Map<String, String> data = snapshot.data;
+              List<Widget> rows = [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                   Container(
+                    child:  Text("Turn: " + (lastPosition != null ? (lastPosition.turn == PlayerColor.white ? "white" : "black") : "-")),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    margin: EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 1
+                      )
+                    ),
+                   )
+                  ],
+                ),
+              ];
               
-              for (var i = 0; i < 8; i++) {
-                List<Widget> cells = [];
+              for (var i = 7; i >= 0; i--) {
+                List<Widget> cells = [
+                  Text((i + 1).toString(), style: TextStyle(color: Colors.black45)),
+                ];
                 for (var j = 0; j < 8; j++) {
-                    MapEntry<String, String> entry = fieldUpdate.entries.toList()[63 - (i + 8 * j)];
+                    MapEntry<String, String> entry = data.entries.toList()[(i + 8 * j)];
                     cells.add(
                       Container(
                         padding: EdgeInsets.only(bottom: 2),
@@ -265,6 +286,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: cells,
                 ));
               }
+
+              rows.add(Padding(
+                padding: EdgeInsets.symmetric(horizontal: width / 16 - 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("A", style: TextStyle(color: Colors.black45)),
+                    Text("B", style: TextStyle(color: Colors.black45)),
+                    Text("C", style: TextStyle(color: Colors.black45)),
+                    Text("D", style: TextStyle(color: Colors.black45)),
+                    Text("E", style: TextStyle(color: Colors.black45)),
+                    Text("F", style: TextStyle(color: Colors.black45)),
+                    Text("G", style: TextStyle(color: Colors.black45)),
+                    Text("H", style: TextStyle(color: Colors.black45)),
+                  ],
+                )
+              ));
 
               return Column(
                 children: rows,

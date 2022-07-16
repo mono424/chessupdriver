@@ -14,10 +14,13 @@ import 'package:chessupdriver/messages/out/MoveAckMessage.dart';
 import 'package:chessupdriver/messages/out/MoveToBoardMessage.dart';
 import 'package:chessupdriver/messages/out/PawnPromotionAckMessage.dart';
 import 'package:chessupdriver/messages/out/PawnPromotionMessage.dart';
+import 'package:chessupdriver/messages/out/PiecesInStartPositionMessage.dart';
 import 'package:chessupdriver/messages/out/RequestBoardPositionMessage.dart';
 import 'package:chessupdriver/messages/out/ResetGameMessage.dart';
 import 'package:chessupdriver/messages/out/SetBlackSettings.dart';
+import 'package:chessupdriver/messages/out/SetGameSettings.dart';
 import 'package:chessupdriver/messages/out/WinOnTimeMessage.dart';
+import 'package:chessupdriver/models/GameSettings.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:chessupdriver/models/PlayerSettings.dart';
 import 'package:synchronized/synchronized.dart';
@@ -129,6 +132,14 @@ class ChessupBoard {
 
   Future<void> winOnTime(PlayerColor winner) async {
     await _send(WinOnTimeMessage(winner).toBytes());
+  }
+
+  Future<void> piecesInStartPosition() async {
+    await _send(PiecesInStartPositionMessage().toBytes());
+  }
+
+  Future<void> setGameSettigns(GameSettings settings) async {
+    await _send(SetGameSettings(settings).toBytes());
   }
 
   Future<void> _send(List<int> message) async {

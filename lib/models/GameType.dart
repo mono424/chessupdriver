@@ -1,0 +1,3 @@
+enum GameType {
+  localOTB, remoteOTB
+}

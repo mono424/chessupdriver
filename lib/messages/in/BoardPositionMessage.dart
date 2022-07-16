@@ -4,7 +4,6 @@ import 'package:chessupdriver/ChessupProtocol.dart';
 import 'package:chessupdriver/models/CastelingOptions.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
 
-// [103, 1, 2, 3, 4, 5, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 8, 8, 8, 8, 8, 8, 8, 8, 9, 10, 11, 12, 13, 11, 10, 9, 0, 1, 1, 1, 1, 64, 0, 0]
 class BoardPositionMessage extends ChessupMessageIn {
   static const headerPrefix = [0x67];
   final int length = 72;

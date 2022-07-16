@@ -7,7 +7,9 @@ import 'package:chessupdriver/messages/in/BoardPromotionAckMessage.dart';
 import 'package:chessupdriver/messages/in/LoadFenReadyMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPawnPromotionMessage.dart';
-import 'package:chessupdriver/messages/in/PiecesInStartPositionMessage.dart';
+import 'package:chessupdriver/messages/in/PieceReleasedMessage.dart';
+import 'package:chessupdriver/messages/in/PieceTouchedMessage.dart';
+import 'package:chessupdriver/messages/in/BoardPiecesInStartPositionMessage.dart';
 
 // Messages received by the driver from the board.
 abstract class ChessupMessageIn {
@@ -60,8 +62,18 @@ abstract class ChessupMessageIn {
         break;
       }
 
-      if (_hasPrefix(message, PiecesInStartPositionMessage.headerPrefix)) {
-        _parsedMessage = PiecesInStartPositionMessage(message);
+      if (_hasPrefix(message, BoardPiecesInStartPositionMessage.headerPrefix)) {
+        _parsedMessage = BoardPiecesInStartPositionMessage(message);
+        break;
+      }
+
+      if (_hasPrefix(message, PieceTouchedMessage.headerPrefix)) {
+        _parsedMessage = PieceTouchedMessage(message);
+        break;
+      }
+
+      if (_hasPrefix(message, PieceReleasedMessage.headerPrefix)) {
+        _parsedMessage = PieceReleasedMessage(message);
         break;
       }
 
