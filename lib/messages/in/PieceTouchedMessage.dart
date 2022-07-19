@@ -11,7 +11,7 @@ class PieceTouchedMessage extends ChessupMessageIn {
   
   PieceTouchedMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessupMessageTooShortException(message);
-    square = ChessupProtocol.squares[message[2]];
-    piece = ChessupProtocol.pieces[message[3]];
+    square = ChessupProtocol.squares[message[1]];
+    piece = ChessupProtocol.pieces[message[2]];
   }
 }

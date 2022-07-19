@@ -89,6 +89,10 @@ class ChessupBoard {
     return _send(LoadFenMessage(fen).toBytes());
   }
 
+  Future<void> setGameSettings(GameSettings gameSettings) async {
+    await _send(SetGameSettings(gameSettings).toBytes());
+  }
+
   Future<void> sendMoveToBoard(String from, String to, {bool waitForAck = false, Duration timeout = const Duration(seconds: 3)}) async {
     Future<ChessupMessageIn> ackFuture = waitForAck ? _inputStream.firstWhere((e) => e is BoardMoveAckMessage).timeout(timeout) : Future.value(null);
     await _send(MoveToBoardMessage(from, to).toBytes());

@@ -8,7 +8,11 @@ import 'package:chessupdriver/ChessupCommunicationClient.dart';
 import 'package:chessupdriver/ChessupMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
+import 'package:chessupdriver/models/GameSettings.dart';
+import 'package:chessupdriver/models/GameType.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
+import 'package:chessupdriver/models/PlayerSettings.dart';
+import 'package:chessupdriver/models/PlayerType.dart';
 import 'package:example/ble_scanner.dart';
 import 'package:example/device_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -206,6 +210,26 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void newOTBGame() {
+    connectedBoard.setGameSettigns(GameSettings(
+      whitePlayer: PlayerSettings(
+        type: PlayerType.player,
+        buttonLock: false,
+        level: 4,
+      ),
+      blackPlayer: PlayerSettings(
+        type: PlayerType.player,
+        buttonLock: true,
+        level: 4,
+      ),
+      whiteRemote: false,
+      blackRemote: false,
+      deviceUser: PlayerColor.white,
+      gameType: GameType.phoneOTB,
+      hintLimit: 0     
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -221,6 +245,10 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(connectedBoard == null ? "Try to connect to board (BLE)" : (boardBtStream != null ? "Disconnect" : "")),
             onPressed: !loading && connectedBoard == null ? connectBle : (boardBtStream != null && !loading ? disconnectBle : null),
           )),
+          Center(child: TextButton(
+            child: Text("New OTB Game"),
+            onPressed: !loading && connectedBoard != null ? newOTBGame : null),
+          ),
           Center(child: TextButton(
             child: Text("Send Random Move"),
             onPressed: !loading && connectedBoard != null ? randomMove : null),
