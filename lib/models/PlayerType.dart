@@ -1,0 +1,4 @@
+enum PlayerType {
+  player,   
+  ai,       
+}
