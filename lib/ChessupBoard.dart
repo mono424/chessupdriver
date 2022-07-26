@@ -73,10 +73,10 @@ class ChessupBoard {
   }
 
   void _sendAck(ChessupMessageIn message) {
-    if (ChessupMessageIn is MoveFromBoardMessage) {
+    if (message is MoveFromBoardMessage) {
       _send(MoveAckMessage().toBytes());
     }
-    if (ChessupMessageIn is BoardPawnPromotionMessage) {
+    if (message is BoardPawnPromotionMessage) {
       _send(PawnPromotionAckMessage().toBytes());
     }
   }

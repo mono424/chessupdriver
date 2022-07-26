@@ -8,6 +8,8 @@ import 'package:chessupdriver/ChessupCommunicationClient.dart';
 import 'package:chessupdriver/ChessupMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
+import 'package:chessupdriver/messages/in/PieceReleasedMessage.dart';
+import 'package:chessupdriver/messages/in/PieceTouchedMessage.dart';
 import 'package:chessupdriver/models/GameSettings.dart';
 import 'package:chessupdriver/models/GameType.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
@@ -149,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   chess.Chess chessInstance = chess.Chess();
   Map<String, String> lastChessboard;
+  Map<String, bool> touchedPieces = {};
   BoardPositionMessage lastPosition;
 
   void newBoardEvent(ChessupMessageIn message) {
@@ -160,8 +163,17 @@ class _MyHomePageState extends State<MyHomePage> {
       chessInstance.move({ "from": message.from, "to": message.to });
     }
 
+    if (message is PieceTouchedMessage) {
+      touchedPieces[message.square] = true;
+    }
+
+    if (message is PieceReleasedMessage) {
+      touchedPieces = {};
+    }
+
     lastChessboard = getChessBoard();
     boardStateStreamController.add(lastChessboard);
+    setState(() {});
   }
 
   void resetChess(Map<String, String> board) {
@@ -215,17 +227,17 @@ class _MyHomePageState extends State<MyHomePage> {
       whitePlayer: PlayerSettings(
         type: PlayerType.player,
         buttonLock: false,
-        level: 4,
+        level: 2,
       ),
       blackPlayer: PlayerSettings(
         type: PlayerType.player,
         buttonLock: true,
-        level: 4,
+        level: 2,
       ),
       whiteRemote: false,
-      blackRemote: false,
+      blackRemote: true,
       deviceUser: PlayerColor.white,
-      gameType: GameType.phoneOTB,
+      gameType: GameType.remote,
       hintLimit: 0     
     ));
   }
@@ -296,7 +308,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(2),
-                            color: Colors.black54,
+                            color: touchedPieces.containsKey(entry.key) ? Colors.blue : Colors.black54,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
