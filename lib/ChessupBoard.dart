@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:chessupdriver/ChessupCommunicationClient.dart';
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
+import 'package:chessupdriver/ChessUpCommunicationClient.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
 import 'package:chessupdriver/messages/in/BoardMoveAckMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPawnPromotionAckMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
@@ -25,19 +25,19 @@ import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:chessupdriver/models/PlayerSettings.dart';
 import 'package:synchronized/synchronized.dart';
 
-class ChessupBoard {
+class ChessUpBoard {
   
-  ChessupCommunicationClient _client;
+  ChessUpCommunicationClient _client;
   StreamController _inputStreamController;
-  Stream<ChessupMessageIn> _inputStream;
+  Stream<ChessUpMessageIn> _inputStream;
   List<int> _buffer;
 
-  ChessupBoard();
+  ChessUpBoard();
 
-  Future<void> init(ChessupCommunicationClient client) async {
+  Future<void> init(ChessUpCommunicationClient client) async {
     _client = client;
     _client.receiveStream.listen(_handleInputStream);
-    _inputStreamController = StreamController<ChessupMessageIn>();
+    _inputStreamController = StreamController<ChessUpMessageIn>();
     _inputStream = _inputStreamController.stream.asBroadcastStream();
 
     getInputStream().listen(_sendAck);
@@ -56,13 +56,13 @@ class ChessupBoard {
 
       while(_buffer.length > 0) {
         try {
-          ChessupMessageIn message = ChessupMessageIn.parse(_buffer);
+          ChessUpMessageIn message = ChessUpMessageIn.parse(_buffer);
           _inputStreamController.add(message);
           _buffer.removeRange(0, message.length);
-        } on ChessupInvalidMessageException catch (e) {
+        } on ChessUpInvalidMessageException catch (e) {
           _buffer = e.buffer;
           _inputStreamController.addError(e);
-        } on ChessupMessageTooShortException catch (_) {
+        } on ChessUpMessageTooShortException catch (_) {
           break;
         } catch (err) {
           _buffer = [];
@@ -72,7 +72,7 @@ class ChessupBoard {
     });
   }
 
-  void _sendAck(ChessupMessageIn message) {
+  void _sendAck(ChessUpMessageIn message) {
     if (message is MoveFromBoardMessage) {
       _send(MoveAckMessage().toBytes());
     }
@@ -81,7 +81,7 @@ class ChessupBoard {
     }
   }
 
-  Stream<ChessupMessageIn> getInputStream() {
+  Stream<ChessUpMessageIn> getInputStream() {
     return _inputStream;
   }
 
@@ -94,7 +94,7 @@ class ChessupBoard {
   }
 
   Future<void> sendMoveToBoard(String from, String to, {bool waitForAck = false, Duration timeout = const Duration(seconds: 3)}) async {
-    Future<ChessupMessageIn> ackFuture = waitForAck ? _inputStream.firstWhere((e) => e is BoardMoveAckMessage).timeout(timeout) : Future.value(null);
+    Future<ChessUpMessageIn> ackFuture = waitForAck ? _inputStream.firstWhere((e) => e is BoardMoveAckMessage).timeout(timeout) : Future.value(null);
     await _send(MoveToBoardMessage(from, to).toBytes());
     await ackFuture;
   }
@@ -106,10 +106,10 @@ class ChessupBoard {
   }
 
   Future<BoardPositionMessage> requestBoardPosition({Duration timeout = const Duration(seconds: 3)}) async {
-    Future<ChessupMessageIn> ackFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
+    Future<ChessUpMessageIn> ackFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
     await _send(RequestBoardPositionMessage().toBytes());
 
-    ChessupMessageIn message = await ackFuture;
+    ChessUpMessageIn message = await ackFuture;
     if (message is BoardPositionMessage) {
       return message;
     }

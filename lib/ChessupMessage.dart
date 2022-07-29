@@ -1,4 +1,4 @@
-import 'package:chessupdriver/ChessupMessageException.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
 import 'package:chessupdriver/messages/in/BatteryChargingMessage.dart';
 import 'package:chessupdriver/messages/in/BoardInfoMessage.dart';
 import 'package:chessupdriver/messages/in/BoardMoveAckMessage.dart';
@@ -12,15 +12,15 @@ import 'package:chessupdriver/messages/in/PieceTouchedMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPiecesInStartPositionMessage.dart';
 
 // Messages received by the driver from the board.
-abstract class ChessupMessageIn {
+abstract class ChessUpMessageIn {
   
   static List<int> headerPrefix;
   int length;
 
-  ChessupMessageIn(List<int> message);
+  ChessUpMessageIn(List<int> message);
 
-  static ChessupMessageIn parse(List<int> message) {
-    ChessupMessageIn _parsedMessage;
+  static ChessUpMessageIn parse(List<int> message) {
+    ChessUpMessageIn _parsedMessage;
     while (message.length > 0) {
       if (_hasPrefix(message, BatteryChargingMessage.headerPrefix)) {
         _parsedMessage = BatteryChargingMessage(message);
@@ -80,7 +80,7 @@ abstract class ChessupMessageIn {
       message.removeAt(0);
     }
 
-    if (_parsedMessage == null) throw ChessupMessageTooShortException(message);
+    if (_parsedMessage == null) throw ChessUpMessageTooShortException(message);
     return _parsedMessage;
   }
 
@@ -94,6 +94,6 @@ abstract class ChessupMessageIn {
 }
 
 // Messages sent by the driver to the board.
-abstract class ChessupMessageOut {
+abstract class ChessUpMessageOut {
   List<int> toBytes();
 }

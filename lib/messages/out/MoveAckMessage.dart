@@ -1,6 +1,6 @@
-import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
 
-class MoveAckMessage extends ChessupMessageOut {
+class MoveAckMessage extends ChessUpMessageOut {
   static const headerPrefix = [0x21];
 
   MoveAckMessage();

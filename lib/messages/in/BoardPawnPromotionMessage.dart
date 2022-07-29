@@ -1,15 +1,15 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
-import 'package:chessupdriver/ChessupProtocol.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
+import 'package:chessupdriver/ChessUpProtocol.dart';
 
-class BoardPawnPromotionMessage extends ChessupMessageIn {
+class BoardPawnPromotionMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xA3, 0x35];
   final int length = 3;
 
   String piece;
 
   BoardPawnPromotionMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
-    piece = ChessupProtocol.pieces[message[2]];
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
+    piece = ChessUpProtocol.pieces[message[2]];
   }
 }

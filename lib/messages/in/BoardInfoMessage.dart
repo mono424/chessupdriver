@@ -1,14 +1,14 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
 
-class BoardInfoMessage extends ChessupMessageIn {
+class BoardInfoMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xB2];
   final int length = 17;
 
   String modelNumber;
   
   BoardInfoMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
     modelNumber = String.fromCharCodes(message.sublist(1, 17));
   }
 }

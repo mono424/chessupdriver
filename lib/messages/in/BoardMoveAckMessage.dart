@@ -1,11 +1,11 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
 
-class BoardMoveAckMessage extends ChessupMessageIn {
+class BoardMoveAckMessage extends ChessUpMessageIn {
   static const headerPrefix = [0x22];
   final int length = 1;
 
   BoardMoveAckMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
   }
 }

@@ -1,7 +1,7 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupProtocol.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpProtocol.dart';
 
-class MoveToBoardMessage extends ChessupMessageOut {
+class MoveToBoardMessage extends ChessUpMessageOut {
   static const headerPrefix = [0x99];
 
   final String from;
@@ -13,8 +13,8 @@ class MoveToBoardMessage extends ChessupMessageOut {
   List<int> toBytes() {
     return [
       ...headerPrefix,
-      ChessupProtocol.squares.indexOf(from),
-      ChessupProtocol.squares.indexOf(to),
+      ChessUpProtocol.squares.indexOf(from),
+      ChessUpProtocol.squares.indexOf(to),
     ];
   }
 }

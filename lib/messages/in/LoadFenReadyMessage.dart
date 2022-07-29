@@ -1,11 +1,11 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
 
-class LoadFenReadyMessage extends ChessupMessageIn {
+class LoadFenReadyMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xB1];
   final int length = 1;
   
   LoadFenReadyMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
   }
 }

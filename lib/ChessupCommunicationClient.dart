@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-class ChessupCommunicationClient {
+class ChessUpCommunicationClient {
   final Future<void> Function(Uint8List) send;
   final StreamController<Uint8List> _inputStreamController = StreamController<Uint8List>();
   final StreamController<Uint8List> _ackStreamController = StreamController<Uint8List>();
@@ -18,7 +18,7 @@ class ChessupCommunicationClient {
     return _ackStream;
   }
 
-  ChessupCommunicationClient(this.send);
+  ChessUpCommunicationClient(this.send);
 
   handleReceive(Uint8List message) {
     _inputStreamController.add(message);

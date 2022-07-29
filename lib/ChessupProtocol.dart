@@ -1,4 +1,4 @@
-abstract class ChessupProtocol {
+abstract class ChessUpProtocol {
   // Pieces
   static const Map<int, String> pieces = {
     0: 'P',

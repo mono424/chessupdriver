@@ -1,14 +1,14 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
 
-class BatteryChargingMessage extends ChessupMessageIn {
+class BatteryChargingMessage extends ChessUpMessageIn {
   static const headerPrefix = [0x33];
   final int length = 2;
 
   bool charging;
   
   BatteryChargingMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
     charging = message[1] == 1;
   }
 }

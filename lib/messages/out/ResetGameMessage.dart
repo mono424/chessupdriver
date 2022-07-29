@@ -1,6 +1,6 @@
-import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
 
-class ResetGameMessage extends ChessupMessageOut {
+class ResetGameMessage extends ChessUpMessageOut {
   static const headerPrefix = [0x64];
 
   ResetGameMessage();

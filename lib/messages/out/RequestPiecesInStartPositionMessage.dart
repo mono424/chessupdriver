@@ -1,6 +1,6 @@
-import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
 
-class RequestPiecesInStartPositionMessage extends ChessupMessageOut {
+class RequestPiecesInStartPositionMessage extends ChessUpMessageOut {
   static const headerPrefix = [0xB0];
 
   RequestPiecesInStartPositionMessage();

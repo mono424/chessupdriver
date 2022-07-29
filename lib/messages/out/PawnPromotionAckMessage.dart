@@ -1,6 +1,6 @@
-import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
 
-class PawnPromotionAckMessage extends ChessupMessageOut {
+class PawnPromotionAckMessage extends ChessUpMessageOut {
   static const headerPrefix = [0x23];
 
   PawnPromotionAckMessage();

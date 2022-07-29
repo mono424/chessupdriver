@@ -1,7 +1,7 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupProtocol.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpProtocol.dart';
 
-class PawnPromotionMessage extends ChessupMessageOut {
+class PawnPromotionMessage extends ChessUpMessageOut {
   static const headerPrefix = [0x97];
 
   final String piece;
@@ -12,7 +12,7 @@ class PawnPromotionMessage extends ChessupMessageOut {
   List<int> toBytes() {
     return [
       ...headerPrefix,
-      ChessupProtocol.pieces.entries.firstWhere((e) => e.value == piece.toUpperCase()).key,
+      ChessUpProtocol.pieces.entries.firstWhere((e) => e.value == piece.toUpperCase()).key,
     ];
   }
 }

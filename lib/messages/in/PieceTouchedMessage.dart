@@ -1,8 +1,8 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
-import 'package:chessupdriver/ChessupProtocol.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
+import 'package:chessupdriver/ChessUpProtocol.dart';
 
-class PieceTouchedMessage extends ChessupMessageIn {
+class PieceTouchedMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xB8];
   final int length = 3;
 
@@ -10,8 +10,8 @@ class PieceTouchedMessage extends ChessupMessageIn {
   String piece;
   
   PieceTouchedMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
-    square = ChessupProtocol.squares[message[1]];
-    piece = ChessupProtocol.pieces[message[2]];
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
+    square = ChessUpProtocol.squares[message[1]];
+    piece = ChessUpProtocol.pieces[message[2]];
   }
 }

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
 
-class LoadFenMessage extends ChessupMessageOut {
+class LoadFenMessage extends ChessUpMessageOut {
   static const headerPrefix = [0x66];
 
   final String fen;

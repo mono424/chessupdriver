@@ -1,8 +1,8 @@
-import 'package:chessupdriver/ChessupMessage.dart';
-import 'package:chessupdriver/ChessupMessageException.dart';
-import 'package:chessupdriver/ChessupProtocol.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
+import 'package:chessupdriver/ChessUpMessageException.dart';
+import 'package:chessupdriver/ChessUpProtocol.dart';
 
-class MoveFromBoardMessage extends ChessupMessageIn {
+class MoveFromBoardMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xA3, 0x35];
   final int length = 6;
 
@@ -10,10 +10,10 @@ class MoveFromBoardMessage extends ChessupMessageIn {
   String to;
 
   MoveFromBoardMessage(List<int> message) : super(message) {
-    if (message.length < length) throw ChessupMessageTooShortException(message);
+    if (message.length < length) throw ChessUpMessageTooShortException(message);
     int source = message[2] + message[3] * 8;
     int destination = message[4] + message[5] * 8;
-    from = ChessupProtocol.squares[source];
-    to = ChessupProtocol.squares[destination];
+    from = ChessUpProtocol.squares[source];
+    to = ChessUpProtocol.squares[destination];
   }
 }

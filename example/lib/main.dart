@@ -3,9 +3,9 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:chess/chess.dart' as chess;
-import 'package:chessupdriver/ChessupBoard.dart';
-import 'package:chessupdriver/ChessupCommunicationClient.dart';
-import 'package:chessupdriver/ChessupMessage.dart';
+import 'package:chessupdriver/ChessUpBoard.dart';
+import 'package:chessupdriver/ChessUpCommunicationClient.dart';
+import 'package:chessupdriver/ChessUpMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
 import 'package:chessupdriver/messages/in/PieceReleasedMessage.dart';
@@ -76,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final bleReadCharacteristic = Uuid.parse("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
   final bleWriteCharacteristic = Uuid.parse("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
 
-  ChessupBoard connectedBoard;
+  ChessUpBoard connectedBoard;
   StreamSubscription<ConnectionStateUpdate> boardBtStream;
   StreamSubscription<List<int>> boardBtInputStream;
 
@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
         }
 
-        ChessupCommunicationClient chessupCommunichessupCommunicationClient = ChessupCommunicationClient(
+        ChessUpCommunicationClient chessupCommunichessupCommunicationClient = ChessUpCommunicationClient(
           (v) => flutterReactiveBle.writeCharacteristicWithResponse(write, value: v)
         );
         boardBtInputStream = flutterReactiveBle
@@ -133,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
             });
           
         // connect to board and initialize
-        ChessupBoard nBoard = ChessupBoard();
+        ChessUpBoard nBoard = ChessUpBoard();
         await nBoard.init(chessupCommunichessupCommunicationClient);
         print("chessupBoard connected");
 
@@ -154,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<String, bool> touchedPieces = {};
   BoardPositionMessage lastPosition;
 
-  void newBoardEvent(ChessupMessageIn message) {
+  void newBoardEvent(ChessUpMessageIn message) {
     if (message is BoardPositionMessage) {
       resetChess(message.board);
       lastPosition = message;
