@@ -142,10 +142,6 @@ class ChessUpBoard {
     await _send(PiecesInStartPositionMessage().toBytes());
   }
 
-  Future<void> setGameSettigns(GameSettings settings) async {
-    await _send(SetGameSettings(settings).toBytes());
-  }
-
   Future<void> _send(List<int> message) async {
     await _client.send(Uint8List.fromList(message));
   }
