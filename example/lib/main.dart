@@ -15,6 +15,7 @@ import 'package:chessupdriver/models/GameType.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:chessupdriver/models/PlayerSettings.dart';
 import 'package:chessupdriver/models/PlayerType.dart';
+import 'package:chessupdriver/models/RawBoardState.dart';
 import 'package:example/ble_scanner.dart';
 import 'package:example/device_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -242,6 +243,18 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
   }
 
+  bool rawActive = false;
+
+  void startRawBoardStream() {
+    setState(() {
+      rawActive = true;
+    });
+    connectedBoard.getRawStateStream().listen((e) {
+      print(e.state);
+    });
+    connectedBoard.enableRawBoardStream();
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -269,7 +282,99 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text("Request Board"),
             onPressed: !loading && connectedBoard != null ? requestBoard : null),
           ),
-          Center( child: StreamBuilder(
+          Center(child: TextButton(
+            child: Text("Stream Raw Board"),
+            onPressed: !loading && connectedBoard != null && !rawActive ? startRawBoardStream : null),
+          ),
+          Center(
+            child: rawActive
+            // ########################################################
+            // RAW GAME
+            // ########################################################
+            ? StreamBuilder(
+            stream: connectedBoard.getRawStateStream(),
+            builder: (context, AsyncSnapshot<RawBoardState> snapshot) {
+              if (!snapshot.hasData) return Text("- no data -");
+
+              Map<String, bool> data = snapshot.data.state;
+              List<Widget> rows = [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                   Container(
+                    child:  Text("Turn: " + (lastPosition != null ? (lastPosition.turn == PlayerColor.white ? "white" : "black") : "-")),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    margin: EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 1
+                      )
+                    ),
+                   )
+                  ],
+                ),
+              ];
+              
+              for (var i = 7; i >= 0; i--) {
+                List<Widget> cells = [
+                  Text((i + 1).toString(), style: TextStyle(color: Colors.black45)),
+                ];
+                for (var j = 0; j < 8; j++) {
+                    MapEntry<String, bool> entry = data.entries.toList().reversed.toList()[(j + 8 * i)];
+                    cells.add(
+                      Container(
+                        padding: EdgeInsets.only(bottom: 2),
+                        width: width / 8 - 4,
+                        height: width / 8 - 4,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            color: touchedPieces.containsKey(entry.key) ? Colors.blue : Colors.black54,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(entry.key, style: TextStyle(color: Colors.white)),
+                              Text(entry.value ? "?" : "", style: TextStyle(color: Colors.white, fontSize: 8)),
+                            ],
+                          )
+                        ),
+                      )
+                  );
+                }
+                rows.add(Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: cells,
+                ));
+              }
+
+              rows.add(Padding(
+                padding: EdgeInsets.symmetric(horizontal: width / 16 - 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("A", style: TextStyle(color: Colors.black45)),
+                    Text("B", style: TextStyle(color: Colors.black45)),
+                    Text("C", style: TextStyle(color: Colors.black45)),
+                    Text("D", style: TextStyle(color: Colors.black45)),
+                    Text("E", style: TextStyle(color: Colors.black45)),
+                    Text("F", style: TextStyle(color: Colors.black45)),
+                    Text("G", style: TextStyle(color: Colors.black45)),
+                    Text("H", style: TextStyle(color: Colors.black45)),
+                  ],
+                )
+              ));
+
+              return Column(
+                children: rows,
+              );
+            }
+          )
+          // ########################################################
+          // NORMAL GAME
+          // ########################################################
+          : StreamBuilder(
             stream: boardStateStreamController.stream,
             builder: (context, AsyncSnapshot<Map<String, String>> snapshot) {
               if (!snapshot.hasData) return Text("- no data -");

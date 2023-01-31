@@ -10,6 +10,7 @@ import 'package:chessupdriver/messages/in/BoardPawnPromotionMessage.dart';
 import 'package:chessupdriver/messages/in/PieceReleasedMessage.dart';
 import 'package:chessupdriver/messages/in/PieceTouchedMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPiecesInStartPositionMessage.dart';
+import 'package:chessupdriver/messages/in/RawBoardStateMessage.dart';
 
 // Messages received by the driver from the board.
 abstract class ChessUpMessageIn {
@@ -22,6 +23,11 @@ abstract class ChessUpMessageIn {
   static ChessUpMessageIn parse(List<int> message) {
     ChessUpMessageIn _parsedMessage;
     while (message.length > 0) {
+      if (_hasPrefix(message, RawBoardStateMessage.headerPrefix)) {
+        _parsedMessage = RawBoardStateMessage(message);
+        break;
+      }
+
       if (_hasPrefix(message, BatteryChargingMessage.headerPrefix)) {
         _parsedMessage = BatteryChargingMessage(message);
         break;

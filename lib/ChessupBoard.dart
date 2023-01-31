@@ -9,6 +9,8 @@ import 'package:chessupdriver/messages/in/BoardPawnPromotionAckMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPawnPromotionMessage.dart';
+import 'package:chessupdriver/messages/in/RawBoardStateMessage.dart';
+import 'package:chessupdriver/messages/out/EnableRawStreamMessage.dart';
 import 'package:chessupdriver/messages/out/LoadFenMessage.dart';
 import 'package:chessupdriver/messages/out/MoveAckMessage.dart';
 import 'package:chessupdriver/messages/out/MoveToBoardMessage.dart';
@@ -23,6 +25,7 @@ import 'package:chessupdriver/messages/out/WinOnTimeMessage.dart';
 import 'package:chessupdriver/models/GameSettings.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:chessupdriver/models/PlayerSettings.dart';
+import 'package:chessupdriver/models/RawBoardState.dart';
 import 'package:synchronized/synchronized.dart';
 
 export 'package:chessupdriver/ChessUpCommunicationClient.dart';
@@ -84,12 +87,22 @@ class ChessUpBoard {
     }
   }
 
+  Stream<RawBoardState> getRawStateStream() {
+    return getInputStream()
+        .where((ChessUpMessageIn msg) => msg is RawBoardStateMessage)
+        .map((ChessUpMessageIn msg) => (msg as RawBoardStateMessage).state);
+  }
+
   Stream<ChessUpMessageIn> getInputStream() {
     return _inputStream;
   }
 
   Future<void> loadFenString(String fen) {
     return _send(LoadFenMessage(fen).toBytes());
+  }
+
+  Future<void> enableRawBoardStream() async {
+    await _send(EnableRawStreamMessage().toBytes());
   }
 
   Future<void> setGameSettings(GameSettings gameSettings) async {
