@@ -11,9 +11,19 @@ class LoadFenMessage extends ChessUpMessageOut {
   
   @override
   List<int> toBytes() {
+    List<String> fenParts = fen.split(' ');
+    if (fenParts.length < 6) throw ArgumentError('Invalid FEN string');
+
+    int halfmoveClock = int.parse(fenParts[4]);
+    int fullmoveNumber = int.parse(fenParts[5]);
+
+    String fenString = "/" + fenParts.sublist(0, 4).join(" ") + " ";
+
     return [
       ...headerPrefix,
-      ...fen.codeUnits,
+      ...utf8.encode(fenString),
+      halfmoveClock,
+      fullmoveNumber,
     ];
   }
 }

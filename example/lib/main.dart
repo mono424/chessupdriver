@@ -223,7 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void newOTBGame() {
-    connectedBoard.setGameSettigns(GameSettings(
+    connectedBoard.setGameSettings(GameSettings(
       whitePlayer: PlayerSettings(
         type: PlayerType.player,
         buttonLock: false,
@@ -237,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
       whiteRemote: false,
       blackRemote: true,
       deviceUser: PlayerColor.white,
-      gameType: GameType.remote,
+      gameType: GameType.phoneOTB,
       hintLimit: 0     
     ));
   }
