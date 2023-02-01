@@ -4,8 +4,6 @@ import 'dart:typed_data';
 
 import 'package:chess/chess.dart' as chess;
 import 'package:chessupdriver/ChessUpBoard.dart';
-import 'package:chessupdriver/ChessUpCommunicationClient.dart';
-import 'package:chessupdriver/ChessUpMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
 import 'package:chessupdriver/messages/in/PieceReleasedMessage.dart';
