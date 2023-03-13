@@ -1,18 +1,18 @@
 import 'package:chessupdriver/ChessUpMessage.dart';
-import 'package:chessupdriver/models/GameSettings.dart';
+import 'package:chessupdriver/models/GameEndType.dart';
 
-class SetGameSettings extends ChessUpMessageOut {
-  static const headerPrefix = [0xB9];
+class SendGameEnded extends ChessUpMessageOut {
+  static const headerPrefix = [0x52];
 
-  final GameSettings settings;
+  final GameEndType endType;
 
-  SetGameSettings(this.settings);
+  SendGameEnded(this.endType);
   
   @override
   List<int> toBytes() {
     return [
       ...headerPrefix,
-      ...settings.toBytes()
+      endType.value,
     ];
   }
 }

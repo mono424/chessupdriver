@@ -12,5 +12,5 @@ enum GameEndType {
   STALEMATE(11);
 
   const GameEndType(this.value);
-  final num value;
+  final int value;
 }
