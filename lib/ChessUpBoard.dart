@@ -10,6 +10,7 @@ import 'package:chessupdriver/messages/in/BoardPositionMessage.dart';
 import 'package:chessupdriver/messages/in/MoveFromBoardMessage.dart';
 import 'package:chessupdriver/messages/in/BoardPawnPromotionMessage.dart';
 import 'package:chessupdriver/messages/in/RawBoardStateMessage.dart';
+import 'package:chessupdriver/messages/out/BoardPositionUpdate.dart';
 import 'package:chessupdriver/messages/out/EnableRawStreamMessage.dart';
 import 'package:chessupdriver/messages/out/LoadFenMessage.dart';
 import 'package:chessupdriver/messages/out/MoveAckMessage.dart';
@@ -19,9 +20,11 @@ import 'package:chessupdriver/messages/out/PawnPromotionMessage.dart';
 import 'package:chessupdriver/messages/out/PiecesInStartPositionMessage.dart';
 import 'package:chessupdriver/messages/out/RequestBoardPositionMessage.dart';
 import 'package:chessupdriver/messages/out/ResetGameMessage.dart';
+import 'package:chessupdriver/messages/out/SendGameEnded.dart';
 import 'package:chessupdriver/messages/out/SetBlackSettings.dart';
 import 'package:chessupdriver/messages/out/SetGameSettings.dart';
 import 'package:chessupdriver/messages/out/WinOnTimeMessage.dart';
+import 'package:chessupdriver/models/GameEndType.dart';
 import 'package:chessupdriver/models/GameSettings.dart';
 import 'package:chessupdriver/models/PlayerColor.dart';
 import 'package:chessupdriver/models/PlayerSettings.dart';
@@ -103,7 +106,7 @@ class ChessUpBoard {
   Future<void> loadFenString(String fen) {
     return _send(LoadFenMessage(fen).toBytes());
   }
-
+  
   Future<void> enableRawBoardStream() async {
     await _send(EnableRawStreamMessage().toBytes());
   }
@@ -139,6 +142,14 @@ class ChessUpBoard {
     Future<BoardPositionMessage> resFuture = getInputStream().firstWhere((e) => e is BoardPositionMessage) as Future<BoardPositionMessage>;
     await _send(RequestBoardPositionMessage().toBytes());
     return timeout == null ? resFuture : resFuture.timeout(timeout);
+  }
+
+  Future<void> sendGameEnded(GameEndType endType) async {
+    await _send(SendGameEnded(endType).toBytes());
+  }
+
+  Future<void> boardPositionUpdate(String fen) {
+    return _send(BoardPositionUpdate(fen).toBytes());
   }
 
   Future<void> resetGame() async {
