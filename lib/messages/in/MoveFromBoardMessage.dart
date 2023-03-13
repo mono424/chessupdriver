@@ -6,8 +6,8 @@ class MoveFromBoardMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xA3, 0x35];
   final int length = 6;
 
-  String from;
-  String to;
+  late String from;
+  late String to;
 
   MoveFromBoardMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessUpMessageTooShortException(message);

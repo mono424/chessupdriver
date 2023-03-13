@@ -2,7 +2,7 @@
 import 'package:chessupdriver/ChessUpProtocol.dart';
 
 class RawBoardState {
-  Map<String, bool> state;
+  late Map<String, bool> state;
 
   RawBoardState(this.state);
 

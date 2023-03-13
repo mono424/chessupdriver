@@ -15,13 +15,13 @@ import 'package:chessupdriver/messages/in/RawBoardStateMessage.dart';
 // Messages received by the driver from the board.
 abstract class ChessUpMessageIn {
   
-  static List<int> headerPrefix;
-  int length;
+  static List<int> headerPrefix = [];
+  int length = 0;
 
   ChessUpMessageIn(List<int> message);
 
   static ChessUpMessageIn parse(List<int> message) {
-    ChessUpMessageIn _parsedMessage;
+    ChessUpMessageIn? _parsedMessage;
     while (message.length > 0) {
       if (_hasPrefix(message, RawBoardStateMessage.headerPrefix)) {
         _parsedMessage = RawBoardStateMessage(message);

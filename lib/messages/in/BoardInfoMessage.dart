@@ -5,7 +5,7 @@ class BoardInfoMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xB2];
   final int length = 17;
 
-  String modelNumber;
+  late String modelNumber;
   
   BoardInfoMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessUpMessageTooShortException(message);

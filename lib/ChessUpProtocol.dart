@@ -1,6 +1,6 @@
 abstract class ChessUpProtocol {
   // Pieces
-  static const Map<int, String> pieces = {
+  static const Map<int, String?> pieces = {
     0: 'P',
     1: 'R',
     2: 'N',
@@ -13,7 +13,7 @@ abstract class ChessUpProtocol {
     11: 'b',
     12: 'q',
     13: 'k',
-    64: null
+    64: null,
   };
 
   // Squares

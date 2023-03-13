@@ -6,7 +6,7 @@ class BoardPawnPromotionMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xA3, 0x35];
   final int length = 3;
 
-  String piece;
+  late String? piece;
 
   BoardPawnPromotionMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessUpMessageTooShortException(message);

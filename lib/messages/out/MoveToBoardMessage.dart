@@ -13,8 +13,8 @@ class MoveToBoardMessage extends ChessUpMessageOut {
   List<int> toBytes() {
     return [
       ...headerPrefix,
-      ChessUpProtocol.squares.indexOf(from),
-      ChessUpProtocol.squares.indexOf(to),
+      ChessUpProtocol.squares.indexOf(from.toLowerCase()),
+      ChessUpProtocol.squares.indexOf(to.toLowerCase()),
     ];
   }
 }

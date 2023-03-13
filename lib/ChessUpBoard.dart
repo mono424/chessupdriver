@@ -33,18 +33,18 @@ export 'package:chessupdriver/ChessUpMessage.dart';
 
 class ChessUpBoard {
   
-  ChessUpCommunicationClient _client;
-  StreamController _inputStreamController;
-  Stream<ChessUpMessageIn> _inputStream;
-  List<int> _buffer;
+  ChessUpCommunicationClient? _client;
+  StreamController<ChessUpMessageIn>? _inputStreamController;
+  Stream<ChessUpMessageIn>? _inputStream;
+  List<int>? _buffer;
 
   ChessUpBoard();
 
   Future<void> init(ChessUpCommunicationClient client) async {
     _client = client;
-    _client.receiveStream.listen(_handleInputStream);
+    _client!.receiveStream.listen(_handleInputStream);
     _inputStreamController = StreamController<ChessUpMessageIn>();
-    _inputStream = _inputStreamController.stream.asBroadcastStream();
+    _inputStream = _inputStreamController!.stream.asBroadcastStream();
 
     getInputStream().listen(_sendAck);
   }
@@ -52,29 +52,28 @@ class ChessUpBoard {
   var lock = new Lock();
   void _handleInputStream(Uint8List rawChunk) async {
     await lock.synchronized(() async {
-      print(rawChunk);
       List<int> chunk = rawChunk.toList();
 
-      if (_buffer == null)
-        _buffer = chunk.toList();
-      else
-        _buffer.addAll(chunk);
+      List<int> buffer = (_buffer == null) ? [] : _buffer!;
+      buffer.addAll(chunk);
 
-      while(_buffer.length > 0) {
+      while(buffer.length > 0) {
         try {
-          ChessUpMessageIn message = ChessUpMessageIn.parse(_buffer);
-          _inputStreamController.add(message);
-          _buffer.removeRange(0, message.length);
+          ChessUpMessageIn message = ChessUpMessageIn.parse(buffer);
+          _inputStreamController!.add(message);
+          buffer.removeRange(0, message.length);
         } on ChessUpInvalidMessageException catch (e) {
-          _buffer = e.buffer;
-          _inputStreamController.addError(e);
+          buffer = e.buffer;
+          _inputStreamController!.addError(e);
         } on ChessUpMessageTooShortException catch (_) {
           break;
         } catch (err) {
-          _buffer = [];
-          _inputStreamController.addError(err);
+          buffer = [];
+          _inputStreamController!.addError(err);
         }
       }
+
+      _buffer = buffer;
     });
   }
 
@@ -94,7 +93,11 @@ class ChessUpBoard {
   }
 
   Stream<ChessUpMessageIn> getInputStream() {
-    return _inputStream;
+    final stream = _inputStream;
+    if (stream == null) {
+      throw Exception("ChessUpBoard not initialized");
+    }
+    return stream;
   }
 
   Future<void> loadFenString(String fen) {
@@ -110,19 +113,19 @@ class ChessUpBoard {
   }
 
   Future<void> sendMoveToBoard(String from, String to, {bool waitForAck = false, Duration timeout = const Duration(seconds: 3)}) async {
-    Future<ChessUpMessageIn> ackFuture = waitForAck ? _inputStream.firstWhere((e) => e is BoardMoveAckMessage).timeout(timeout) : Future.value(null);
+    Future<ChessUpMessageIn?> ackFuture = waitForAck ? getInputStream().firstWhere((e) => e is BoardMoveAckMessage).timeout(timeout) : Future.value(null);
     await _send(MoveToBoardMessage(from, to).toBytes());
     await ackFuture;
   }
 
   Future<void> sendPawnPromotion(String piece, {Duration timeout = const Duration(seconds: 3)}) async {
-    Future<BoardPawnPromotionAckMessage> ackFuture = _inputStream.firstWhere((e) => e is BoardPawnPromotionAckMessage).timeout(timeout);
+    Future<ChessUpMessageIn> ackFuture = getInputStream().firstWhere((e) => e is BoardPawnPromotionAckMessage).timeout(timeout);
     await _send(PawnPromotionMessage(piece).toBytes());
     await ackFuture;
   }
 
-  Future<BoardPositionMessage> requestBoardPosition({Duration timeout = const Duration(seconds: 3)}) async {
-    Future<ChessUpMessageIn> ackFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
+  Future<BoardPositionMessage?> requestBoardPosition({Duration timeout = const Duration(seconds: 3)}) async {
+    Future<ChessUpMessageIn> ackFuture = getInputStream().firstWhere((e) => e is BoardPositionMessage).timeout(timeout);
     await _send(RequestBoardPositionMessage().toBytes());
 
     ChessUpMessageIn message = await ackFuture;
@@ -132,8 +135,8 @@ class ChessUpBoard {
     return null;
   }
 
-  Future<void> waitForPiecesInStartPosition({Duration timeout}) async {
-    Future<BoardPositionMessage> resFuture = _inputStream.firstWhere((e) => e is BoardPositionMessage);
+  Future<BoardPositionMessage> waitForPiecesInStartPosition({Duration? timeout}) async {
+    Future<BoardPositionMessage> resFuture = getInputStream().firstWhere((e) => e is BoardPositionMessage) as Future<BoardPositionMessage>;
     await _send(RequestBoardPositionMessage().toBytes());
     return timeout == null ? resFuture : resFuture.timeout(timeout);
   }
@@ -159,7 +162,11 @@ class ChessUpBoard {
   }
 
   Future<void> _send(List<int> message) async {
-    await _client.send(Uint8List.fromList(message));
+    final client = _client;
+    if (client == null) {
+      throw Exception("ChessUpBoard not initialized");
+    }
+    await client.send(Uint8List.fromList(message));
   }
 
   bool equals(List<int> a, List<int> b) {

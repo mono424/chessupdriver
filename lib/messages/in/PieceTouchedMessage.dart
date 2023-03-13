@@ -6,8 +6,8 @@ class PieceTouchedMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xB8];
   final int length = 3;
 
-  String square;
-  String piece;
+  late String square;
+  late String? piece;
   
   PieceTouchedMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessUpMessageTooShortException(message);

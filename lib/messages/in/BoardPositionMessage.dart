@@ -8,12 +8,12 @@ class BoardPositionMessage extends ChessUpMessageIn {
   static const headerPrefix = [0x67];
   final int length = 72;
 
-  Map<String, String> board;
-  PlayerColor turn;
-  CastelingOptions castelingOptions;
-  bool enPassant;
-  int halfMove;
-  int fullMove;
+  late Map<String, String?> board;
+  late PlayerColor turn;
+  late CastelingOptions castelingOptions;
+  late bool enPassant;
+  late int halfMove;
+  late int fullMove;
 
   BoardPositionMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessUpMessageTooShortException(message);

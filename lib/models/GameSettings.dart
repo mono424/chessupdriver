@@ -11,7 +11,15 @@ class GameSettings {
   final bool blackRemote;
   final PlayerColor deviceUser;
 
-  GameSettings({this.gameType, this.whitePlayer, this.blackPlayer, this.hintLimit = 0, this.whiteRemote, this.blackRemote, this.deviceUser});
+  GameSettings({
+    required this.gameType, 
+    required this.whitePlayer,
+    required this.blackPlayer,
+    required this.whiteRemote,
+    required this.blackRemote,
+    required this.deviceUser,
+    this.hintLimit = 0
+  });
 
   List<int> toBytes() {
     return [

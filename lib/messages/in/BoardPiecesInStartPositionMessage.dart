@@ -5,7 +5,7 @@ class BoardPiecesInStartPositionMessage extends ChessUpMessageIn {
   static const headerPrefix = [0xB0];
   final int length = 2;
 
-  bool isInStartPosition;
+  late bool isInStartPosition;
   
   BoardPiecesInStartPositionMessage(List<int> message) : super(message) {
     if (message.length < length) throw ChessUpMessageTooShortException(message);
